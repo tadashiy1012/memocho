@@ -12,16 +12,18 @@ const desktopDirName = 'Desktop';
 const textFileName = 'memo.txt';
 const homeDirPath = os.homedir();
 const desktopDirPath = path.join(homeDirPath, desktopDirName);
-const textFilePath = path.join(desktopDirPath, textFileName);
+const defaultTextFilePath = path.join(desktopDirPath, textFileName);
+
+let loadedTextFilePath = null;
 
 const saveButton = document.querySelector('#saveBtn');
 const loadButton = document.querySelector('#loadBtn');
 const textArea = document.querySelector('#text');
 
 function saveText() {
-    console.log(textArea);
     let txt = textArea.value;
-    fs.writeFile(textFilePath, txt, (err) => {
+    const path = loadedTextFilePath || defaultTextFilePath;
+    fs.writeFile(path, txt, (err) => {
         if (err) {
             window.alert('file save failed.');
         } else {
@@ -31,6 +33,7 @@ function saveText() {
 }
 
 function loadText() {
+    loadedTextFilePath = null;
     let focusedWindow = browserWindow.getFocusedWindow();
     dialog.showOpenDialog(focusedWindow, {
         properties: ['openFile'],
@@ -41,11 +44,10 @@ function loadText() {
     }, (files) => {
         let str = '';
         files.forEach((file) => {
-            console.log(file);
+            loadedTextFilePath = file;
             let buf = fs.readFileSync(file);
             str += buf.toString();
         });
-        console.log(str);
         textArea.value = str;
     });
 }
